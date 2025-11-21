@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.MultipartConfigElement;
 
@@ -17,6 +18,7 @@ import model.Usuario;
 import service.DoacaoService;
 import service.PecaService;
 import service.UsuarioService;
+import service.ClassificarRoupaIAService;
 import java.util.ArrayList;
 
 public class Aplicacao {
@@ -28,6 +30,47 @@ public class Aplicacao {
         DoacaoService doacaoService = new DoacaoService();
         PecaService pecaService = new PecaService();
         UsuarioService usuarioService = new UsuarioService();
+        ClassificarRoupaIAService classificarRoupaIAService = new ClassificarRoupaIAService();
+        
+     // ===================================================
+     // ROTA DE CLASSIFICAR IMAGEM 
+     // ===================================================
+        
+        post("/classificar", (req, res) -> {
+            req.attribute("org.eclipse.jetty.multipartConfig", new MultipartConfigElement("/temp"));
+            
+            byte[] foto = null;
+            
+            //obter a foto
+            try (InputStream is = req.raw().getPart("imagem").getInputStream()) {
+                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                int nRead;
+                byte[] data = new byte[1024];
+                while ((nRead = is.read(data, 0, data.length)) != -1) {
+                    buffer.write(data, 0, nRead);
+                }
+                foto = buffer.toByteArray();
+            } catch (Exception e) {
+                // Ignorar erro se não houver imagem
+            }
+            
+            res.type("application/json");
+
+            if (foto != null && foto.length > 0) {
+                try {
+                    // Chama o serviço de IA para obter tipo e cor
+                    Map<String, String> iaResults = classificarRoupaIAService.classificaRoupa(foto);
+                    res.status(200);
+                    return new Gson().toJson(iaResults);
+                } catch (Exception e) {
+                    System.err.println("Erro na rota /classificar: " + e.getMessage());
+                    res.status(500);
+                    return "{\"message\": \"Erro interno da IA.\" + e.getMessage()}";
+                }
+            }
+            res.status(400);
+            return "{\"message\": \"Nenhuma imagem fornecida.\"}";
+        });
 
         // ===================== ROTA DE DOAÇÃO =====================
         post("/doacao", (req, res) -> {
@@ -37,6 +80,7 @@ public class Aplicacao {
             String descricao = req.queryParams("descricao");
             String tamanho = req.queryParams("tamanho");
             String categoria = req.queryParams("categoria");
+            String cor = "";
 
             byte[] foto = null;
 
@@ -75,7 +119,6 @@ public class Aplicacao {
                 foto = new byte[0]; // fallback
             }
         }
-
 
             Doacao d = new Doacao(nome, descricao, tamanho, categoria, foto);
             boolean ok = doacaoService.cadastrar(d);

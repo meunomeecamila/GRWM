@@ -56,6 +56,13 @@
   		<artifactId>jbcrypt</artifactId>
   		<version>0.4</version>
 	</dependency>
+	
+	<!--Para a IA CustomVision IA, converte JSON-->
+	<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.15.2</version> 
+    </dependency>
 
   </dependencies>
 

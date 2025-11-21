@@ -34,37 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==============================
-  // 🩷 2️⃣ CADASTRO DE DOAÇÃO
-  // ==============================
-  const formDoacao = document.getElementById("formDoacao");
-  if (formDoacao) {
-    console.log("📋 Página de cadastro detectada.");
-
-    formDoacao.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-
-      try {
-        const response = await fetch("/doacao", {
-          method: "POST",
-          body: formData
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          window.location.href = "sucesso.html";
-        } else {
-          alert(data.message || "Erro ao cadastrar doação.");
-        }
-      } catch (error) {
-        console.error("❌ Erro ao enviar doação:", error);
-        alert("Erro ao cadastrar a doação.");
-      }
-    });
-  }
-
-  // ==============================
   // 🩷 3️⃣ FEED DE DOAÇÕES AUTOMÁTICO
   // ==============================
   const container = document.getElementById("cards-explorar");
@@ -132,6 +101,95 @@ document.addEventListener("DOMContentLoaded", () => {
 
     carregarDoacoes();
   }
+  
+
+  // ==============================
+  // LÓGICA DE PREENCHIMENTO E ESCOLHA IA E MANUAL
+  // ==============================
+  const btnAuto = document.getElementById('btn-cadastro-auto');
+  const fileInput = document.getElementById('file-upload');
+  const nomeInput = document.getElementById('input-nome');
+  const descricaoInput = document.getElementById('input-descricao');
+  const categoriaSelect = document.getElementById('input-categoria');
+  const submitBtn = document.getElementById('submit-btn');
+
+  if (fileInput) {
+      fileInput.addEventListener('change', () => {
+          // Habilita o botao "Enviar" se um arquivo foi selecionado, permitindo o preenchimento manual
+          if (fileInput.files && fileInput.files.length > 0) {
+              submitBtn.disabled = false;
+          } else {
+              submitBtn.disabled = true;
+          }
+      });
+  }
+
+  if (btnAuto && fileInput) {
+      btnAuto.addEventListener('click', async () => {
+          if (!fileInput.files || fileInput.files.length === 0) {
+              alert("⚠️ Por favor, escolha uma foto primeiro!");
+              return;
+          }
+
+          const formData = new FormData();
+          formData.append('imagem', fileInput.files[0]);
+
+          //Trava a interface
+          btnAuto.disabled = true;
+          btnAuto.textContent = "Processando IA...";
+          
+          try {
+              //chama a rota de classificação rapida no backend Java
+              const response = await fetch("/classificar", {
+                  method: "POST",
+                  body: formData
+              });
+
+              const iaResults = await response.json();
+
+              if (response.ok && iaResults.tipo) {
+                  
+                  //obter e formatar resultados
+                  const tipo = iaResults.tipo;
+                  const cor = iaResults.cor || ''; 
+                  
+                  const tipoDisplay = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+                  const corDisplay = cor.charAt(0).toUpperCase() + cor.slice(1);
+
+                  //preenchendo campos
+                  // Nome: Tipo + Cor
+                  nomeInput.value = `${tipoDisplay} ${corDisplay}`.trim();
+                  
+                  // Categoria: Tipo (Busca o VALUE correspondente no <select>)
+                  let categoriaValue = tipo.toLowerCase().replace(" ", "-");
+                  
+                  if (categoriaSelect.querySelector(`option[value="${categoriaValue}"]`)) {
+                      categoriaSelect.value = categoriaValue;
+                  } else if (tipo.toLowerCase().includes('camisa') || tipo.toLowerCase().includes('blusa')) {
+                      // Exemplo de Mapeamento para categoria ampla
+                      categoriaSelect.value = "blusas-e-camisetas"; 
+                  } 
+                  
+                  // Descrição: Complementa com a Cor
+  				descricaoInput.value = (descricaoInput.value ? descricaoInput.value + ". " : "") + `${tipoDisplay} da cor ${corDisplay}.`;
+                  
+                  alert("✅ Cadastro preenchido automaticamente pela IZA! Revise antes de Enviar.");
+                  submitBtn.disabled = false; // Garante que o botao Enviar esta habilitado
+                  
+              } else {
+                  alert(`❌ Falha na classificação da IZA: ${iaResults.message || "Erro desconhecido. Preencha manualmente."}`);
+              }
+
+          } catch (error) {
+              console.error("❌ Erro de rede ou parse:", error);
+              alert("❌ Erro de rede ao tentar conectar com a IZA. Preencha manualmente.");
+          } finally {
+              //destrava o botão da IZA
+              btnAuto.disabled = false;
+              btnAuto.textContent = "Cadastro Automático";
+          }
+      });
+  }
 });
 
 // ===================================================================
@@ -142,3 +200,4 @@ style.textContent = `
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 `;
 document.head.appendChild(style);
+

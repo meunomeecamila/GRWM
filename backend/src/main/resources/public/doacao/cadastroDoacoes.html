@@ -44,31 +44,32 @@
                         <!--Nome-->
                         <div id="form-nome" class="item">
                             <p>Nome</p>
-                            <input type="text" name="nome" placeholder="Exemplo: Blusa branca básica">
+                            <input type="text" name="nome" id="input-nome" placeholder="Exemplo: Blusa branca básica">
                         </div>
                         <!--Seleção de tamanho-->
                         <div id="form-tamanho" class="item">
                             <p>Tamanho</p>
                             <select name="tamanho" id="tamanhos">
-                                <option value="pp"> PP </option>
-                                <option value="p"> P</option>
-                                <option value="m"> M</option>
-                                <option value="g"> G </option>
-                                <option value="gg"> GG </option>
-                                <option value="xgg"> XGG </option>
+								<option value="Não Possui"> Não Possui </option>
+                                <option value="PP"> PP </option>
+                                <option value="P"> P</option>
+                                <option value="M"> M</option>
+                                <option value="G"> G </option>
+                                <option value="GG"> GG </option>
+                                <option value="XGG"> XGG </option>
                             </select>
                         </div>
 
                         <!--Descrição-->
                         <div id="form-descricao" class="item">
                             <p>Breve descrição</p>
-                            <textarea name="descricao" placeholder="Exemplo: Blusa branca, tamanho M"></textarea>
+                            <textarea name="descricao" id="input-descricao" placeholder="Exemplo: Blusa branca, tamanho M"></textarea>
                         </div>
 
                         <!--Seleção Categoria-->
                         <div id="form-categoria" class="item">
                             <p>Categoria</p>
-                            <select name="categoria">
+                            <select name="categoria" id="input-categoria">
                                 <option value="blusas-e-camisetas">Blusas e Camisetas</option>
                                 <option value="vestidos">Vestidos</option>
                                 <option value="calcas">Calças</option>
@@ -93,7 +94,7 @@
 						</div>
 						<!-- Botão de envio dentro do form -->
 						    <div class="item">
-						        <button type="submit">Enviar</button>
+						        <button type="submit" id="submit-btn" disabled>Enviar</button>
 						    </div>
                     </form>
                 </div>
@@ -107,7 +108,7 @@
     <img src="imgs/izatransparente.jpg" alt="Imagem decorativa" class="imagem-canto">
     <div class="balao-fala">
         <p>Dica da IZA:</p>
-        <button class="balao-btn">Cadastro Automático</button>
+        <button class="balao-btn" id="btn-cadastro-auto">Cadastro Automático</button>
         <br>
         <small>Observação: a Iza pode cometer erros!</small>
     </div>
